@@ -1,3 +1,5 @@
+import glob
+import threading
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import json
@@ -11,6 +13,11 @@ class BSESettingsGUI:
         self.root = root
         self.root.title("Bristol Stock Exchange Settings")
         self.root.geometry("650x500")
+
+        # Process tracking variables
+        self.process = None
+        self.process_running = False
+        self.simulation_thread = None
 
         # Create a notebook (tabbed interface)
         self.notebook = ttk.Notebook(root)
@@ -70,8 +77,8 @@ class BSESettingsGUI:
         # Number of trials
         ttk.Label(frame, text="Number of trials:").grid(row=2, column=0, sticky="w", padx=10, pady=5)
         self.n_trials_var = tk.IntVar()
-        self.n_trials_slider = ttk.Scale(frame, from_=1, to=100, orient=tk.HORIZONTAL,
-                                         variable=self.n_trials_var, length=300)
+        self.n_trials_slider = ttk.Scale(frame, from_=1, to=100, orient=tk.HORIZONTAL, variable=self.n_trials_var, length=300,
+                                         command=lambda v: self.n_trials_var.set(round(float(v) * 1) / 1))  # Round to nearest 1)
         self.n_trials_slider.grid(row=2, column=1, padx=10, pady=5)
         self.n_trials_entry = ttk.Entry(frame, width=10, textvariable=self.n_trials_var)
         self.n_trials_entry.grid(row=2, column=2, padx=10, pady=5)
@@ -85,17 +92,13 @@ class BSESettingsGUI:
         self.n_recorded_entry = ttk.Entry(frame, width=10, textvariable=self.n_recorded_var)
         self.n_recorded_entry.grid(row=3, column=2, padx=10, pady=5)
 
-        # Verbose output checkbox
-        self.verbose_var = tk.BooleanVar()
-        self.verbose_check = ttk.Checkbutton(frame, text="Verbose output", variable=self.verbose_var)
-        self.verbose_check.grid(row=5, column=0, sticky="w", padx=10, pady=5)
 
     def setup_traders_tab(self):
         frame = ttk.LabelFrame(self.traders_tab, text="Trader Configurations")
         frame.pack(fill="both", expand=True, padx=10, pady=10)
 
         # Trader types
-        trader_types = ["GVWY", "SHVR", "ZIC", "ZIP", "PRZI", "PRSH", "PRDE"]
+        trader_types = ["GVWY", "SHVR", "ZIC", "ZIP", "PRZI", "SNPR"]
 
         # Buyer section
         buyer_frame = ttk.LabelFrame(frame, text="Buyers")
@@ -190,29 +193,12 @@ class BSESettingsGUI:
         self.dump_tape_check = ttk.Checkbutton(frame, text="Dump tape", variable=self.dump_tape_var)
         self.dump_tape_check.grid(row=4, column=0, sticky="w", padx=10, pady=5)
 
-        # Output directory
-        ttk.Label(frame, text="Output directory:").grid(row=5, column=0, sticky="w", padx=10, pady=5)
-        self.output_dir_var = tk.StringVar()
-        self.output_dir_entry = ttk.Entry(frame, width=50, textvariable=self.output_dir_var)
-        self.output_dir_entry.grid(row=5, column=1, sticky="w", padx=10, pady=5)
-        self.output_dir_button = ttk.Button(frame, text="Browse...", command=self.select_output_dir)
-        self.output_dir_button.grid(row=5, column=2, sticky="w", padx=10, pady=5)
-
-    def select_output_dir(self):
-        directory = filedialog.askdirectory(title="Select output directory")
-        if directory:
-            self.output_dir_var.set(directory)
 
     def setup_control_buttons(self):
         button_frame = ttk.Frame(self.root)
         button_frame.pack(fill="x", padx=10, pady=10)
 
         # Add buttons for save, load, reset, run
-        self.save_button = ttk.Button(button_frame, text="Save Settings", command=self.save_settings)
-        self.save_button.pack(side="left", padx=5)
-
-        self.load_button = ttk.Button(button_frame, text="Load Settings", command=self.load_settings)
-        self.load_button.pack(side="left", padx=5)
 
         self.reset_button = ttk.Button(button_frame, text="Reset to Defaults", command=self.load_default_settings)
         self.reset_button.pack(side="left", padx=5)
@@ -220,8 +206,16 @@ class BSESettingsGUI:
         self.run_button = ttk.Button(button_frame, text="Apply & Run Simulation", command=self.run_simulation)
         self.run_button.pack(side="right", padx=5)
 
+        self.cancel_button = ttk.Button(button_frame, text="Cancel Simulation", command=self.cancel_simulation, state=tk.DISABLED)
+        self.cancel_button.pack(side="right", padx=5)
+
         self.apply_button = ttk.Button(button_frame, text="Apply Settings", command=self.apply_settings)
         self.apply_button.pack(side="right", padx=5)
+
+        # Add status label
+        self.status_var = tk.StringVar(value="Ready")
+        self.status_label = ttk.Label(button_frame, textvariable=self.status_var)
+        self.status_label.pack(side="right", padx=15)
 
     def load_default_settings(self):
         # General settings
@@ -229,7 +223,6 @@ class BSESettingsGUI:
         self.hours_var.set(24.0)
         self.n_trials_var.set(1)
         self.n_recorded_var.set(1)
-        self.verbose_var.set(False)
 
         # Trader settings
         default_buyers = [("SHVR", 5), ("GVWY", 5), ("ZIC", 2), ("ZIP", 13)]
@@ -245,53 +238,12 @@ class BSESettingsGUI:
         self.toggle_same_traders()
 
         # Output settings
-        self.dump_blotters_var.set(True)
+        self.dump_blotters_var.set(False)
         self.dump_lobs_var.set(False)
-        self.dump_strats_var.set(True)
+        self.dump_strats_var.set(False)
         self.dump_avgbals_var.set(True)
-        self.dump_tape_var.set(True)
-        self.output_dir_var.set(os.getcwd())
+        self.dump_tape_var.set(False)
 
-    def save_settings(self):
-        """Save current settings to a JSON file"""
-        settings = self.collect_settings()
-
-        # Ask user for save location
-        filename = filedialog.asksaveasfilename(
-            defaultextension=".json",
-            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
-            title="Save BSE Settings",
-            initialfile="settings"
-        )
-
-        if not filename:
-            return
-
-        try:
-            with open(filename, 'w') as f:
-                json.dump(settings, f, indent=4)
-            messagebox.showinfo("Success", f"Settings saved to {filename}")
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to save settings: {str(e)}")
-
-    def load_settings(self):
-        """Load settings from a JSON file"""
-        filename = filedialog.askopenfilename(
-            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
-            title="Load BSE Settings"
-        )
-
-        if not filename:
-            return
-
-        try:
-            with open(filename, 'r') as f:
-                settings = json.load(f)
-
-            self.apply_loaded_settings(settings)
-            messagebox.showinfo("Success", f"Settings loaded from {filename}")
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to load settings: {str(e)}")
 
     def apply_loaded_settings(self, settings):
         """Apply loaded settings to the GUI"""
@@ -300,7 +252,6 @@ class BSESettingsGUI:
         self.hours_var.set(settings.get("hours_in_a_day", 24.0))
         self.n_trials_var.set(settings.get("n_trials", 1))
         self.n_recorded_var.set(settings.get("n_trials_recorded", 1))
-        self.verbose_var.set(settings.get("verbose", False))
 
         # Trader settings
         buyers = settings.get("buyers_spec", [])
@@ -330,7 +281,6 @@ class BSESettingsGUI:
         self.dump_strats_var.set(dump_flags.get("dump_strats", True))
         self.dump_avgbals_var.set(dump_flags.get("dump_avgbals", True))
         self.dump_tape_var.set(dump_flags.get("dump_tape", True))
-        self.output_dir_var.set(settings.get("output_dir", os.getcwd()))
 
     def collect_settings(self):
         """Collect all settings into a dictionary"""
@@ -341,7 +291,6 @@ class BSESettingsGUI:
         settings["hours_in_a_day"] = self.hours_var.get()
         settings["n_trials"] = self.n_trials_var.get()
         settings["n_trials_recorded"] = self.n_recorded_var.get()
-        settings["verbose"] = self.verbose_var.get()
 
         # Trader settings
         buyers_spec = []
@@ -371,7 +320,6 @@ class BSESettingsGUI:
             "dump_tape": self.dump_tape_var.get()
         }
         settings["dump_flags"] = dump_flags
-        settings["output_dir"] = self.output_dir_var.get()
 
         return settings
 
@@ -393,18 +341,17 @@ class BSESettingsGUI:
                 f.write(f"buyers_spec = {settings['buyers_spec']}\n")
 
                 if settings.get("same_traders", True):
-                    f.write("sellers_spec = buyers_spec\n")
+                    f.write("sellers_spec = buyers_spec\n\n")
                 else:
-                    f.write(f"sellers_spec = {settings['sellers_spec']}\n")
+                    f.write(f"sellers_spec = {settings['sellers_spec']}\n\n")
 
                 # traders_spec = {'sellers': sellers_spec, 'buyers': buyers_spec, 'proptraders': proptraders_spec}
-                f.write("proptraders_spec = []\n")
-                f.write(
-                    "traders_spec = {'sellers': sellers_spec, 'buyers': buyers_spec, 'proptraders': proptraders_spec}\n\n")
+                # f.write("proptraders_spec = []\n")
+                # f.write(
+                #     "traders_spec = {'sellers': sellers_spec, 'buyers': buyers_spec, 'proptraders': proptraders_spec}\n\n")
 
                 # Output settings
                 f.write("# Output settings\n")
-                f.write(f"verbose = {str(settings['verbose'])}\n")
                 f.write(f"n_trials = {settings['n_trials']}\n")
                 f.write(f"n_trials_recorded = {settings['n_trials_recorded']}\n")
                 f.write(f"dump_flags = {settings['dump_flags']}\n")
@@ -416,15 +363,86 @@ class BSESettingsGUI:
             return False
 
     def run_simulation(self):
-        """Apply settings and run the BSE simulation"""
+        """Apply settings and run the BSE simulation in a background thread"""
         if self.apply_settings():
-            try:
-                # Run the main BSE script with the config
-                command = [sys.executable, "BSE.py"]
-                subprocess.Popen(command)
-                messagebox.showinfo("Success", "BSE simulation started")
-            except Exception as e:
-                messagebox.showerror("Error", f"Failed to run simulation: {str(e)}")
+            # Disable run button and enable cancel button
+            self.run_button.configure(state=tk.DISABLED)
+            self.cancel_button.configure(state=tk.NORMAL)
+            self.status_var.set("Simulation running...")
+
+            # Start simulation in a separate thread
+            self.process_running = True
+            self.simulation_thread = threading.Thread(target=self._run_simulation_thread)
+            self.simulation_thread.daemon = True
+            self.simulation_thread.start()
+
+    def _run_simulation_thread(self):
+        """Background thread function that runs the simulation"""
+        try:
+            # Run the main BSE script with the config
+            command = [sys.executable, "BSE.py"]
+            self.process = subprocess.Popen(command)
+
+            # Update UI from the main thread
+            self.root.after(0, lambda: self.status_var.set("BSE simulation running..."))
+
+            # Wait for process to complete
+            self.process.wait()
+
+            # If the process wasn't canceled
+            if self.process_running:
+                print("BSE.py simulation finished.")
+
+                search_dir = os.getcwd()
+                search_pattern = os.path.join(search_dir, "*_avg_balance.csv")
+                avg_balance_file = glob.glob(search_pattern)
+
+                if not avg_balance_file:
+                    self.root.after(0, lambda: messagebox.showerror("Error",
+                                                                    f"No '*_avg_balance.csv' file found in {search_dir}."))
+                else:
+                    print(f"Identified output CSV: {avg_balance_file}")
+
+                    # Process the results into a graph directory
+                    command = [sys.executable, "processResults.py", avg_balance_file[0]]
+                    process = subprocess.Popen(command)
+                    process.wait()
+                    print("Results successfully processed")
+
+                    # Process stats from the results
+                    command = [sys.executable, "stats.py", avg_balance_file[0]]
+                    process = subprocess.Popen(command)
+                    process.wait()
+                    print("Stats successfully processed")
+
+                    # Update status in the main thread
+                    self.root.after(0, lambda: self.status_var.set("Processing complete"))
+        except Exception as e:
+            # Show error in the main thread
+            self.root.after(0, lambda: messagebox.showerror("Error", f"Failed to run simulation: {str(e)}"))
+        finally:
+            # Reset UI in the main thread
+            self.root.after(0, self.reset_simulation_state)
+
+    def cancel_simulation(self):
+        """Cancel the running simulation"""
+        if self.process and self.process.poll() is None:
+            # Process is running, terminate it
+            self.process_running = False
+            self.process.terminate()
+            self.status_var.set("Simulation canceled")
+            print("Simulation canceled by user")
+            # Reset UI state
+            self.reset_simulation_state()
+
+    def reset_simulation_state(self):
+        """Reset UI elements after simulation completes or is canceled"""
+        self.run_button.configure(state=tk.NORMAL)
+        self.cancel_button.configure(state=tk.DISABLED)
+        if self.status_var.get() == "Simulation running..." or self.status_var.get() == "BSE simulation running...":
+            self.status_var.set("Ready")
+        self.process = None
+        self.process_running = False
 
 
 if __name__ == "__main__":

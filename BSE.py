@@ -58,7 +58,6 @@ import time as chrono
 import csv
 from datetime import datetime
 import bse_config
-from bse_config import n_days, buyers_spec, sellers_spec
 
 # a bunch of system constants (globals)
 bse_sys_minprice = 1                    # minimum price in the system, in cents/pennies
@@ -3434,8 +3433,11 @@ if __name__ == "__main__":
                           'dump_avgbals': False, 'dump_tape': False}
         else:
             # we're still recording all the required data-files
-            dump_flags = {'dump_blotters': True, 'dump_lobs': False, 'dump_strats': True,
-                          'dump_avgbals': True, 'dump_tape': True}
+            # dump_flags = {'dump_blotters': True, 'dump_lobs': False, 'dump_strats': True,
+            #               'dump_avgbals': True, 'dump_tape': True}
+            dump_flags = bse_config.dump_flags
+
+        # dump_flags = bse_config.dump_flags
 
         # simulate the market session
         market_session(trial_id, start_time, end_time, traders_spec, order_sched, dump_flags, verbose)

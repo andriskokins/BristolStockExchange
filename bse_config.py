@@ -6,11 +6,8 @@ hours_in_a_day = 24.0
 # Trader specifications
 buyers_spec = [('SHVR', 5), ('GVWY', 5), ('ZIC', 2), ('ZIP', 13)]
 sellers_spec = buyers_spec
-proptraders_spec = []
-traders_spec = {'sellers': sellers_spec, 'buyers': buyers_spec, 'proptraders': proptraders_spec}
 
 # Output settings
-verbose = False
-n_trials = 1
+n_trials = 10
 n_trials_recorded = 1
-dump_flags = {'dump_blotters': True, 'dump_lobs': False, 'dump_strats': True, 'dump_avgbals': True, 'dump_tape': True}
+dump_flags = {'dump_blotters': False, 'dump_lobs': False, 'dump_strats': False, 'dump_avgbals': True, 'dump_tape': False}
