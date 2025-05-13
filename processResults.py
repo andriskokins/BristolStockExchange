@@ -133,7 +133,6 @@ else:
 
         plt.tight_layout(rect=[0, 0, 1, 0.96])  # Adjust layout
         plt.savefig("graphs/bots_performance.png", dpi=300)
-        plt.savefig("graphs/bots_performance.pdf", dpi=300)  # Save as PDF too
         plt.show(block=True)
     except Exception as e:
         print(f"Error plotting bot performance: {e}")
@@ -174,7 +173,6 @@ if 'Time' in avgBalance.columns and 'Bid' in avgBalance.columns and 'Ask' in avg
 
         plt.tight_layout(rect=[0, 0, 1, 0.96])  # Adjust layout
         plt.savefig("graphs/bid_ask_prices.png", dpi=300)
-        plt.savefig("graphs/bid_ask_prices.pdf", dpi=300)  # Save as PDF too
         plt.show(block=True)
     except Exception as e:
         print(f"Error plotting bid/ask prices: {e}")

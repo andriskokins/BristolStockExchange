@@ -4,8 +4,8 @@ n_days = 0.01
 hours_in_a_day = 24.0
 
 # Trader specifications
-buyers_spec = [('SHVR', 5), ('GVWY', 5), ('ZIC', 2), ('ZIP', 13)]
-sellers_spec = buyers_spec
+buyers_spec = [('SHVR', 4), ('GVWY', 80), ('SNPR', 40), ('ZIC', 4), ('ZIP', 40)]
+sellers_spec = [('SHVR', 1), ('GVWY', 20), ('SNPR', 10), ('ZIC', 1), ('ZIP', 10)]
 
 # Output settings
 n_trials = 1
