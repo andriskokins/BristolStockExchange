@@ -1,29 +1,78 @@
-# About
+# Bristol Stock Exchange Simulation
 
-<i>NB: in Q3 of 2025, 13 years after BSE was first launched, we'll be making BSE2 available in a separate repo. BSE2 is a major refactoring and extension of the original BSE. This, the original BSE repo, will be retained for legacy and reference, and because the code is old and stable and simple; but for advanced usage BSE2 should be the preferred choice once it is available.</i>
+A GUI-enhanced implementation of Dave Cliff's Bristol Stock Exchange (BSE) - a simple minimal simulation of a limit order book financial exchange.
 
-BSE, The Bristol Stock Exchange, is a simple minimal simulation of a limit-order-book financial exchange, developed for teaching. The aim is to let students explore writing automated trading strategies that deal with "Level 2" market data.
+![BSE GUI Screenshot](docs/main_screen.png)
 
-It is written in Python, is single-threaded and all in one file for ease of use by novices. The file BSEguide.pdf explains much of what is going on and includes an example programming assignment. The Wiki here on the BSE GitHub site holds a copy of the BSEguide text: it may be that the Wiki text is more up to date than the PDF file. 
+## Overview
 
-The code in BSE is based on a large number of simplifying assumptions, chief of which is absolute-zero latency: if a trader issues a new quote, that gets processed by the exchange and all other traders can react to it, in zero time (i.e., before any other quote is issued). 
+This project extends the original Bristol Stock Exchange simulation by adding:
 
-Nevertheless, because the BSE system is stochastic it can also be used to introduce issues in the design of experiments and analysis of empirical data.
+1. An intuitive graphical user interface for easier interaction with the simulation
+2. Automated graph generation tools for visualizing trading data
+3. Comprehensive analysis scripts for evaluating trading strategies
+4. An ACM-style report documenting methodologies and findings
 
-Real exchanges are much much more complicated than this. 
+This work was completed as coursework for a [University of Nottingham](https://www.nottingham.ac.uk/computerscience/) module.
 
-If you use BSE in your work, please link back to this GitHub page for BSE so that people know where to find the original Python source-code: https://github.com/davecliff/BristolStockExchange, and please also cite the peer-reviewed paper that describes BSE:
- 
-Cliff, D. (2018). BSE: A Minimal Simulation of a Limit-Order-Book Stock Exchange. In M. Affenzeller, et al. (Eds.), Proceedings 30th European Modeling and Simulation Symposium (EMSS 2018), pp. 194-203. DIME University of Genoa.
- 
-Which you can download from here:
-https://research-information.bris.ac.uk/ws/portalfiles/portal/167944812/Cliff_i3M_CRC_formatted_repository.pdf
+## Installation
 
-or here:
-https://arxiv.org/abs/1809.06027
+Clone the repository:
 
+```bash
+git clone https://github.com/andriskokins/BristolStockExchange.git
+cd BristolStockExchange
+```
 
-The code is open-sourced via the MIT Licence: see the LICENSE file for full text. 
-(copied from http://opensource.org/licenses/mit-license.php)
+### Requirements
 
-Last update: Dave Cliff, March 27th 2024.
+- Python 3.12+
+- Required packages:
+  - numpy
+  - pandas
+  - matplotlib
+  - seaborn
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+## Usage
+
+To launch the GUI and start configuring your simulation:
+
+```bash
+python bse_settings.py
+```
+
+### Using the GUI
+
+1. Configure simulation parameters (number of traders, time periods, etc.)
+2. Select trader types and strategies
+3. Run the simulation
+4. View and export results
+
+## Project Report
+
+📄 **[View the full project report](docs/report.pdf)**
+
+This report details:
+- The methodologies used in developing the GUI
+- Analysis of different trading strategies
+- Performance evaluation metrics
+- Experimental results and conclusions
+
+## Original Work
+
+This project is based on the Bristol Stock Exchange simulation developed by [Dave Cliff](https://github.com/davecliff/BristolStockExchange). The original code has been extended with additional features while maintaining the core functionality.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgements
+
+- Dave Cliff for the original Bristol Stock Exchange simulation
+- University of Nottingham for the coursework opportunity

@@ -11,7 +11,7 @@ class BSESettingsGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Bristol Stock Exchange Settings")
-        self.root.geometry("650x500")
+        self.root.geometry("700x500")
 
         # Process tracking variables
         self.process = None
@@ -51,10 +51,10 @@ class BSESettingsGUI:
         ttk.Label(frame, text="Simulation Duration (days):").grid(row=0, column=0, sticky="w", padx=10, pady=5)
         self.n_days_var = tk.DoubleVar()
         self.n_days_slider = ttk.Scale(frame, from_=0.01, to=10.0, orient=tk.HORIZONTAL,
-                                       variable=self.n_days_var, length=300)
+                                       variable=self.n_days_var, length=250)
         self.n_days_slider.grid(row=0, column=1, padx=10, pady=5)
-        self.n_days_entry = ttk.Entry(frame, width=10, textvariable=self.n_days_var)
-        self.n_days_entry.grid(row=0, column=2, padx=10, pady=5)
+        self.n_days_entry = ttk.Entry(frame, width=5, textvariable=self.n_days_var, justify='left')
+        self.n_days_entry.grid(row=0, column=2, padx=10, pady=5, sticky="w")
 
         # Hours per day
         ttk.Label(frame, text="Hours per day:").grid(row=1, column=0, sticky="w", padx=10, pady=5)
@@ -66,30 +66,32 @@ class BSESettingsGUI:
             to=24.0,
             orient=tk.HORIZONTAL,
             variable=self.hours_var,
-            length=300,
+            length=250,
             command=lambda v: self.hours_var.set(round(float(v) * 2) / 2)  # Round to nearest 0.5
         )
         self.hours_slider.grid(row=1, column=1, padx=10, pady=5)
-        self.hours_entry = ttk.Entry(frame, width=10, textvariable=self.hours_var)
-        self.hours_entry.grid(row=1, column=2, padx=10, pady=5)
+        self.hours_entry = ttk.Entry(frame, width=5, textvariable=self.hours_var, justify='left')
+        self.hours_entry.grid(row=1, column=2, padx=10, pady=5, sticky="w")
 
         # Number of trials
         ttk.Label(frame, text="Number of trials:").grid(row=2, column=0, sticky="w", padx=10, pady=5)
         self.n_trials_var = tk.IntVar()
-        self.n_trials_slider = ttk.Scale(frame, from_=1, to=100, orient=tk.HORIZONTAL, variable=self.n_trials_var, length=300,
-                                         command=lambda v: self.n_trials_var.set(round(float(v) * 1) / 1))  # Round to nearest 1)
+        self.n_trials_slider = ttk.Scale(frame, from_=1, to=100, orient=tk.HORIZONTAL, variable=self.n_trials_var,
+                                         length=250,
+                                         command=lambda v: self.n_trials_var.set(
+                                             round(float(v) * 1) / 1))  # Round to nearest 1)
         self.n_trials_slider.grid(row=2, column=1, padx=10, pady=5)
-        self.n_trials_entry = ttk.Entry(frame, width=10, textvariable=self.n_trials_var)
-        self.n_trials_entry.grid(row=2, column=2, padx=10, pady=5)
+        self.n_trials_entry = ttk.Entry(frame, width=5, textvariable=self.n_trials_var, justify='left')
+        self.n_trials_entry.grid(row=2, column=2, padx=10, pady=5, sticky="w")
 
         # Number of recorded trials
         ttk.Label(frame, text="Number of recorded trials:").grid(row=3, column=0, sticky="w", padx=10, pady=5)
         self.n_recorded_var = tk.IntVar()
         self.n_recorded_slider = ttk.Scale(frame, from_=1, to=100, orient=tk.HORIZONTAL,
-                                           variable=self.n_recorded_var, length=300)
+                                           variable=self.n_recorded_var, length=250)
         self.n_recorded_slider.grid(row=3, column=1, padx=10, pady=5)
-        self.n_recorded_entry = ttk.Entry(frame, width=10, textvariable=self.n_recorded_var)
-        self.n_recorded_entry.grid(row=3, column=2, padx=10, pady=5)
+        self.n_recorded_entry = ttk.Entry(frame, width=5, textvariable=self.n_recorded_var, justify='left')
+        self.n_recorded_entry.grid(row=3, column=2, padx=10, pady=5, sticky="w")
 
 
     def setup_traders_tab(self):
@@ -202,7 +204,7 @@ class BSESettingsGUI:
         self.reset_button = ttk.Button(button_frame, text="Reset to Defaults", command=self.load_default_settings)
         self.reset_button.pack(side="left", padx=5)
 
-        self.run_button = ttk.Button(button_frame, text="Apply & Run Simulation", command=self.run_simulation)
+        self.run_button = ttk.Button(button_frame, text="Run Simulation", command=self.run_simulation)
         self.run_button.pack(side="right", padx=5)
 
         self.cancel_button = ttk.Button(button_frame, text="Cancel Simulation", command=self.cancel_simulation, state=tk.DISABLED)
@@ -393,7 +395,7 @@ class BSESettingsGUI:
                 print("BSE.py simulation finished.")
 
                 search_dir = os.getcwd()
-                search_pattern = os.path.join(search_dir, "*_avg_balance.csv")
+                search_pattern = os.path.join(search_dir, "output/raw/*_avg_balance.csv")
                 avg_balance_file = glob.glob(search_pattern)
 
                 if not avg_balance_file:
@@ -447,4 +449,5 @@ class BSESettingsGUI:
 if __name__ == "__main__":
     root = tk.Tk()
     app = BSESettingsGUI(root)
+    root.focus_force() # Focus the window so it's at the foreground
     root.mainloop()

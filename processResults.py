@@ -16,8 +16,8 @@ plt.rcParams.update({
 # --- End Style Application ---
 
 # Create folder for graphs
-if not os.path.exists("graphs"):
-    os.makedirs("graphs")
+if not os.path.exists("output/figures"):
+    os.makedirs("output/figures")
 
 # Get file path from command line
 if len(sys.argv) == 1:
@@ -132,7 +132,7 @@ else:
         ax_bots.set_axisbelow(True)
 
         plt.tight_layout(rect=[0, 0, 1, 0.96])  # Adjust layout
-        plt.savefig("graphs/bots_performance.png", dpi=300)
+        plt.savefig("output/figures/bots_performance.png", dpi=300)
         plt.show(block=True)
     except Exception as e:
         print(f"Error plotting bot performance: {e}")
@@ -172,7 +172,7 @@ if 'Time' in avgBalance.columns and 'Bid' in avgBalance.columns and 'Ask' in avg
         ax_prices.set_axisbelow(True)
 
         plt.tight_layout(rect=[0, 0, 1, 0.96])  # Adjust layout
-        plt.savefig("graphs/bid_ask_prices.png", dpi=300)
+        plt.savefig("output/figures/bid_ask_prices.png", dpi=300)
         plt.show(block=True)
     except Exception as e:
         print(f"Error plotting bid/ask prices: {e}")

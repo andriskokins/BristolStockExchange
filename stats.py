@@ -120,7 +120,9 @@ def calculate_and_print_stats(filepath):
     # Save the DataFrame to a CSV file
     try:
         output_filename = "agent_stats_summary.csv"
-        stats_df.to_csv("graphs/"+output_filename)
+        if not os.path.exists("output/raw"):
+            os.makedirs("output/raw")
+        stats_df.to_csv("output/raw/"+output_filename)
         print(f"\nSuccessfully saved agent statistics to {output_filename}")
     except Exception as e:
         print(f"\nERROR: Could not save statistics to CSV. Reason: {e}")

@@ -3085,24 +3085,26 @@ def market_session(sess_id, starttime, endtime, trader_spec, order_schedule, dum
     bookkeep_verbose = False
     populate_verbose = False
 
+    output_path = "output/raw/"
+
     if dumpfile_flags['dump_strats']:
-        strat_dump = open(sess_id + '_strats.csv', 'w')
+        strat_dump = open(output_path +  sess_id + '_strats.csv', 'w')
     else:
         strat_dump = None
 
     if dumpfile_flags['dump_lobs']:
-        lobframes = open(sess_id + '_LOB_frames.csv', 'w')
+        lobframes = open(output_path + sess_id + '_LOB_frames.csv', 'w')
     else:
         lobframes = None
 
     if dumpfile_flags['dump_avgbals']:
-        avg_bals = open(sess_id + '_avg_balance.csv', 'w')
+        avg_bals = open(output_path + sess_id + '_avg_balance.csv', 'w')
     else:
         avg_bals = None
         
     if dumpfile_flags['dump_tape']:
         # NB writing transactions only -- not writing cancellations
-        tape_dump = open(sess_id + '_tape.csv', 'w')
+        tape_dump = open(output_path + sess_id + '_tape.csv', 'w')
     else:
         tape_dump = None
         
@@ -3217,7 +3219,7 @@ def market_session(sess_id, starttime, endtime, trader_spec, order_schedule, dum
 
 if __name__ == "__main__":
 
-    price_offset_filename = 'offset_BTC_USD_20250211.csv'
+    price_offset_filename = 'data/raw/offset_BTC_USD_20250211.csv'
 
     # if called from the command line with one argument, the first argument is the price offset filename
     if len(sys.argv) > 1:

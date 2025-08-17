@@ -177,3 +177,10 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Output figures and raw data
+output/
+
+# Configuration file
+bse_config.py
+
