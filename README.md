@@ -44,7 +44,7 @@ pip install -r requirements.txt
 To launch the GUI and start configuring your simulation:
 
 ```bash
-python bse_settings.py
+python3 bse_settings.py
 ```
 
 ### Using the GUI
@@ -67,10 +67,6 @@ This report details:
 ## Original Work
 
 This project is based on the Bristol Stock Exchange simulation developed by [Dave Cliff](https://github.com/davecliff/BristolStockExchange). The original code has been extended with additional features while maintaining the core functionality.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgements
 
